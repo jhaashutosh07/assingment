@@ -1,0 +1,79 @@
+variables:
+  INPUT_DIR: /app/data
+  OUTPUT_DIR: /app/output
+  DATASET: sales
+
+pipeline:
+  name: sales_data_pipeline
+
+  tasks:
+    - name: ingest
+      type: read_csv
+      input: "${INPUT_DIR}/${DATASET}.csv"
+      output: raw_data
+
+    - name: clean
+      type: clean_data
+      depends_on:
+        - ingest
+      input: raw_data
+      operations:
+        - remove_nulls
+        - trim_whitespace
+      output: clean_data
+
+    - name: validate
+      type: validate_schema
+      depends_on:
+        - clean
+      input: clean_data
+      schema:
+        columns:
+          - name: id
+            type: integer
+          - name: product
+            type: string
+          - name: amount
+            type: float
+          - name: date
+            type: string
+      output: validated_data
+
+    - name: domestic_pricing
+      type: transform
+      depends_on:
+        - validate
+      input: validated_data
+      operations:
+        - name: convert_currency
+          column: amount
+          rate: 1.1
+      output: domestic_data
+
+    - name: international_pricing
+      type: transform
+      depends_on:
+        - validate
+      input: validated_data
+      operations:
+        - name: convert_currency
+          column: amount
+          rate: 1.2
+      output: international_data
+
+    - name: merge_results
+      type: merge
+      depends_on:
+        - domestic_pricing
+        - international_pricing
+      inputs:
+        - domestic_data
+        - international_data
+      output: merged_data
+
+    - name: generate_report
+      type: report
+      depends_on:
+        - merge_results
+      input: merged_data
+      output_file: "${OUTPUT_DIR}/${DATASET}_report.json"

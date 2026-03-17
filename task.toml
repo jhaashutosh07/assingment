@@ -1,0 +1,30 @@
+version = "1.0"
+
+[metadata]
+author_name = "Ashutosh Jha"
+author_email = "ashutoshjha@example.com"
+difficulty = "hard"
+category = "devops"
+tags = ["python", "data-pipeline", "debugging", "dependency-resolution"]
+
+[verifier]
+timeout_sec = 120.0
+
+[agent]
+timeout_sec = 300.0
+
+[environment]
+build_timeout_sec = 600.0
+cpus = 1
+memory_mb = 2048
+storage_mb = 10240
+gpus = 0
+allow_internet = true
+mcp_servers = []
+
+[environment.runtime]
+python = "3.12"
+
+[verifier.env]
+
+[solution.env]
